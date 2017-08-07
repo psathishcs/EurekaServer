@@ -6,19 +6,15 @@
  * For more details take a look at the Java Quickstart chapter in the Gradle
  * user guide available at https://docs.gradle.org/2.14.1/userguide/tutorial_java_projects.html
  */
-
-
 buildscript {
-	ext {
-		springBootVersion = '1.4.3.RELEASE'
-	}
     repositories {
 		maven {
       		url 'http://windows10.server.com:9081/artifactory/libs-release/'
      	}
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.3.RELEASE")
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.2.RELEASE")
+        classpath('se.transmode.gradle:gradle-docker:1.2')
     }
 }
 
@@ -26,6 +22,7 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
+apply plugin: 'docker'
 
 
 sourceCompatibility = 1.8
@@ -54,6 +51,19 @@ dependencies {
 
 dependencyManagement {
 	imports {
-		mavenBom "org.springframework.cloud:spring-cloud-dependencies:Camden.SR4"
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:Camden.SR7"
 	}
+}
+
+
+task buildDocker(type: Docker, dependsOn: build) {
+  push = true
+  applicationName = jar.baseName
+  dockerfile = file('src/main/docker/Dockerfile')
+  doFirst {
+    copy {
+      from jar
+      into stageDir
+    }
+  }
 }
